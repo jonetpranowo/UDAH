@@ -9,22 +9,61 @@ output: github_document
 knitr::opts_chunk$set(echo = TRUE)
 ```
 
-## R Markdown
+# Alternative code using "dplyr" package:
 
-This is an R Markdown document. Markdown is a simple formatting syntax for authoring HTML, PDF, and MS Word documents. For more details on using R Markdown see <http://rmarkdown.rstudio.com>.
+## Data manipulation
 
-When you click the **Knit** button a document will be generated that includes both content as well as the output of any embedded R code chunks within the document. You can embed an R code chunk like this:
+I have checked your code and I when compare with the alternative code that I made using "dplyr" package the results are the same.
 
-```{r cars}
-summary(cars)
+load "dplyr" and "tidyr" 
+
+```{r dplyr and tidyr}
+library(dplyr)
+library(tidyr)
 ```
 
-## Including Plots
+Read the data
+```{r read data}
+dat <- read.csv("ArrestMini.csv")
+```
 
-You can also embed plots, for example:
+Create new variables: "DATE" and "TIME" from variables "ARRESTTIME" then save it to new dataframe "dat1"
+```{r create new variables}
+dat1 <- dat %>% 
+  separate(ARRESTTIME, c('DATE', 'TIME'), sep = 'T')
+```
 
-```{r pressure, echo=FALSE}
-plot(pressure)
+```{r}
+head(dat1)
+```
+
+Aggregate council districts that is affected by crime on the day --> I save it as "Arrest_Daily"
+```{r}
+Arrest_Daily <- dat1 %>%
+  mutate(Date = as.Date(DATE, "%m/%d/%Y")) %>%
+  group_by(DATE) %>%
+  summarize(CASES = n(), NUM_COUNCIL = n_distinct(COUNCIL_DISTRICT)) %>%
+  arrange(DATE) 
+```
+
+```{r}
+Arrest_Daily
+```
+
+
+
+
+
+## Plots
+
+```{r}
+rdate <- as.Date(Arrest_Daily$DATE, "%Y-%m-%d")
+fix(rdate)
+```
+
+
+```{r plot, echo=FALSE}
+plot(Arrest_Daily$NUM_COUNCIL~rdate, type="l", col="red", xlab= "Time", ylab = "Number of council")
 ```
 
 Note that the `echo = FALSE` parameter was added to the code chunk to prevent printing of the R code that generated the plot.
